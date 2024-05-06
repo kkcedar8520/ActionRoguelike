@@ -8,14 +8,20 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class USInteractionComponent;
 
 UCLASS()
 class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,Category="Attack")
 	TSubclassOf<AActor> ProjectileClass;
+	UPROPERTY(EditAnywhere,Category="Attack")
+	UAnimMontage* AttackAnimMontage;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
+	
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
@@ -25,14 +31,22 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
+	
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere)
+	USInteractionComponent* interactionComp;
+	
+	
 
 	void MoveForward(float value);
 	void MoveRight(float value);
 	virtual void BeginPlay() override;
 
 	void PrimaryAttack();
+	void PrimaryAttack_Timelapsed();
+	void PrimaryInteraction();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

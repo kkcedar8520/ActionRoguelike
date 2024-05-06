@@ -4,31 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SMagicProjectile.generated.h"
+#include"SGamePlayInterface.h"
+#include "SItemChest.generated.h"
 
-class USphereComponent;
-class UProjectileMovementComponent;
-class UParticleSystemComponent;
 UCLASS()
-class ACTIONROUGELIKE_API ASMagicProjectile : public AActor
+class ACTIONROUGELIKE_API ASItemChest : public AActor,public ISGamePlayInterface
 {
 	GENERATED_BODY()
 	
+	 void Interact_Implementation(APawn* InstigatorPawn) ;
 public:	
 	// Sets default values for this actor's properties
-	ASMagicProjectile();
+	ASItemChest();
 
-protected:
+	UPROPERTY(EditAnywhere);
+	float TargetPitch;
+	
+	
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-	USphereComponent* SphereComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UProjectileMovementComponent* MovementComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UParticleSystemComponent* EffectComp;
+	UStaticMeshComponent* LidMesh;
 	
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

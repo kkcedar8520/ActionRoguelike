@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Actor.h"
 #include "SExplosiveBarrel.generated.h"
 
 class UProjectileMovementComponent;
+class URadialForceComponent;
 class UStaticMeshComponent;
+class ASExplosiveEffect;
 UCLASS()
 class ACTIONROUGELIKE_API ASExplosiveBarrel : public AActor
 {
@@ -19,18 +22,24 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> FlareClass;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	URadialForceComponent* RadialForceComp;
+
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* FireEffectComp;
 	
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComp;
+	
+	UFUNCTION()
+	void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	virtual void PostInitializeComponents()override;
 
 	virtual void BeginPlay() override;
 
 
-	UFUNCTION()
-	void Boom(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit );
+
 	
 public:	
 	// Called every frame
