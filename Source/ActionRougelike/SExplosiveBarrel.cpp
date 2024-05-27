@@ -3,6 +3,7 @@
 
 #include "SExplosiveBarrel.h"
 #include "PhysicsEngine/RadialForceComponent.h"
+#include "DrawDebugHelpers.h"
 
 
 
@@ -53,7 +54,14 @@ void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 
 	RadialForceComp->FireImpulse();
 	
+	UE_LOG(LogTemp, Log, TEXT("OnActorHit in Explosive Barrel"));
+
+	UE_LOG(LogTemp, Warning, TEXT("OnActor:%s, at game time:%f"), *GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
+
+	FString CombineString = FString::Printf(TEXT("Hit Actor Location : %s"), * Hit.ImpactPoint.ToString());
 	
+
+	DrawDebugString(GetWorld(), Hit.ImpactPoint, CombineString, nullptr, FColor::Green, 2.0f, true);
 }
 
 
