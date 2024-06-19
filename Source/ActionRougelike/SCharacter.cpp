@@ -6,6 +6,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include"SInteractionComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "CollisionDebugDrawingPublic.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -84,7 +87,8 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("PrimaryAttack",IE_Pressed,this,&ASCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("PrimaryInteraction",IE_Pressed,this,&ASCharacter::PrimaryInteraction);
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ASCharacter::Jump);
-	
+	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ASCharacter::Ultimate);
+
 }
 
 void ASCharacter::PrimaryAttack()
@@ -103,13 +107,47 @@ void ASCharacter::PrimaryAttack_Timelapsed()
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
 
-	FTransform SpawnTm = FTransform(GetControlRotation(), HandLocation);
+	FCollisionObjectQueryParams ObjectQuerryParams;
+	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+
+	FVector CameraLocation;
+	FVector CameraFowardvector;
+	
+	
+	CameraLocation = CameraComp->GetComponentLocation();
+	CameraFowardvector = CameraComp->GetForwardVector();
+
+	FVector End = CameraLocation + (CameraFowardvector * 100000000);
+
+
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(Hit, CameraLocation, End, ObjectQuerryParams);
+
+	FRotator TagetRotator;
+	if (Hit.bBlockingHit)
+	{
+		TagetRotator =UKismetMathLibrary::FindLookAtRotation(HandLocation, Hit.ImpactPoint);
+	}
+	else
+	{
+		TagetRotator= UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
+	}
+
+	FColor LineColor = Hit.bBlockingHit ? FColor::Green : FColor::Red;
+	DrawDebugLine(GetWorld(), CameraLocation, End, LineColor, 1.0f);
+
+
+
+	FTransform SpawnTm = FTransform(TagetRotator, HandLocation);
 
 	FActorSpawnParameters SpawnParams;
 
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = this;
 
+
+	
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTm, SpawnParams);
 }
 
@@ -120,5 +158,57 @@ void ASCharacter::PrimaryInteraction()
 		interactionComp->PrimaryInteract();	
 	}
 	
+}
+
+void ASCharacter::Ultimate()
+{
+	PlayAnimMontage(AttackAnimMontage);
+
+
+
+	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+	FCollisionObjectQueryParams ObjectQuerryParams;
+	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+
+	FVector CameraLocation;
+	FVector CameraFowardvector;
+
+
+	CameraLocation = CameraComp->GetComponentLocation();
+	CameraFowardvector = CameraComp->GetForwardVector();
+
+	FVector End = CameraLocation + (CameraFowardvector * 100000000);
+
+
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(Hit, CameraLocation, End, ObjectQuerryParams);
+
+	FRotator TagetRotator;
+	if (Hit.bBlockingHit)
+	{
+		TagetRotator = UKismetMathLibrary::FindLookAtRotation(HandLocation, Hit.ImpactPoint);
+	}
+	else
+	{
+		TagetRotator = UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
+	}
+
+	FColor LineColor = Hit.bBlockingHit ? FColor::Green : FColor::Red;
+	DrawDebugLine(GetWorld(), CameraLocation, End, LineColor, 1.0f);
+
+
+
+	FTransform SpawnTm = FTransform(TagetRotator, HandLocation);
+
+	FActorSpawnParameters SpawnParams;
+
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
+
+
+
+	GetWorld()->SpawnActor<AActor>(UltimateClass, SpawnTm, SpawnParams);
 }
 

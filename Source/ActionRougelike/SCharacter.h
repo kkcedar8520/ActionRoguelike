@@ -20,6 +20,9 @@ protected:
 	UPROPERTY(EditAnywhere,Category="Attack")
 	UAnimMontage* AttackAnimMontage;
 
+	UPROPERTY(EditAnywhere,Category="Attack")
+	TSubclassOf<AActor> UltimateClass;
+
 	FTimerHandle TimerHandle_PrimaryAttack;
 	
 public:
@@ -47,6 +50,8 @@ protected:
 	void PrimaryAttack();
 	void PrimaryAttack_Timelapsed();
 	void PrimaryInteraction();
+
+	void Ultimate();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
