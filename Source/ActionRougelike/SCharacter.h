@@ -23,6 +23,9 @@ protected:
 	UPROPERTY(EditAnywhere,Category="Attack")
 	TSubclassOf<AActor> UltimateClass;
 
+	UPROPERTY(EditAnywhere,Category="Attack")
+	TSubclassOf<AActor> TeleportClass;
+
 	FTimerHandle TimerHandle_PrimaryAttack;
 	
 public:
@@ -52,6 +55,10 @@ protected:
 	void PrimaryInteraction();
 
 	void Ultimate();
+
+	void Teleport();
+
+	void SpawnProjectile(TSubclassOf<AActor> SpawnProjectileClass);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

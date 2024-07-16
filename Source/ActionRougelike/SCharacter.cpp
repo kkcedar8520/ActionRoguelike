@@ -88,7 +88,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("PrimaryInteraction",IE_Pressed,this,&ASCharacter::PrimaryInteraction);
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ASCharacter::Jump);
 	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ASCharacter::Ultimate);
-
+	PlayerInputComponent->BindAction("Teleport", IE_Pressed, this, &ASCharacter::Teleport);
 }
 
 void ASCharacter::PrimaryAttack()
@@ -104,51 +104,11 @@ void ASCharacter::PrimaryAttack()
 
 void ASCharacter::PrimaryAttack_Timelapsed()
 {
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-
-
-	FCollisionObjectQueryParams ObjectQuerryParams;
-	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-
-	FVector CameraLocation;
-	FVector CameraFowardvector;
-	
-	
-	CameraLocation = CameraComp->GetComponentLocation();
-	CameraFowardvector = CameraComp->GetForwardVector();
-
-	FVector End = CameraLocation + (CameraFowardvector * 100000000);
-
-
-	FHitResult Hit;
-	GetWorld()->LineTraceSingleByObjectType(Hit, CameraLocation, End, ObjectQuerryParams);
-
-	FRotator TagetRotator;
-	if (Hit.bBlockingHit)
+	if (ensure(ProjectileClass))
 	{
-		TagetRotator =UKismetMathLibrary::FindLookAtRotation(HandLocation, Hit.ImpactPoint);
+		SpawnProjectile(ProjectileClass);
 	}
-	else
-	{
-		TagetRotator= UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
-	}
-
-	FColor LineColor = Hit.bBlockingHit ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), CameraLocation, End, LineColor, 1.0f);
-
-
-
-	FTransform SpawnTm = FTransform(TagetRotator, HandLocation);
-
-	FActorSpawnParameters SpawnParams;
-
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
-
-
 	
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTm, SpawnParams);
 }
 
 void ASCharacter::PrimaryInteraction()
@@ -163,14 +123,37 @@ void ASCharacter::PrimaryInteraction()
 void ASCharacter::Ultimate()
 {
 	PlayAnimMontage(AttackAnimMontage);
+	if (ensure(UltimateClass))
+	{
+		SpawnProjectile(UltimateClass);
+	}
 
+}
 
+void ASCharacter::Teleport()
+{
+	PlayAnimMontage(AttackAnimMontage);
+
+	if (ensure(TeleportClass))
+	{
+		SpawnProjectile(TeleportClass);
+	}
+
+}
+
+void ASCharacter::SpawnProjectile(TSubclassOf<AActor> SpawnProjectileClass)
+{
 
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 
 	FCollisionObjectQueryParams ObjectQuerryParams;
 	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 	ObjectQuerryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	ObjectQuerryParams.AddObjectTypesToQuery(ECC_Pawn);
+
+
+	FCollisionShape Shape;
+	Shape.SetSphere(20.0f);
 
 	FVector CameraLocation;
 	FVector CameraFowardvector;
@@ -179,24 +162,23 @@ void ASCharacter::Ultimate()
 	CameraLocation = CameraComp->GetComponentLocation();
 	CameraFowardvector = CameraComp->GetForwardVector();
 
-	FVector End = CameraLocation + (CameraFowardvector * 100000000);
-
+	FVector TargetEnd = CameraLocation + (CameraFowardvector * 100000000);
 
 	FHitResult Hit;
-	GetWorld()->LineTraceSingleByObjectType(Hit, CameraLocation, End, ObjectQuerryParams);
+	GetWorld()->SweepSingleByObjectType(Hit, CameraLocation, TargetEnd, FQuat::Identity, ObjectQuerryParams, Shape);
 
 	FRotator TagetRotator;
 	if (Hit.bBlockingHit)
 	{
-		TagetRotator = UKismetMathLibrary::FindLookAtRotation(HandLocation, Hit.ImpactPoint);
-	}
-	else
-	{
-		TagetRotator = UKismetMathLibrary::FindLookAtRotation(HandLocation, End);
+		TargetEnd = Hit.ImpactPoint;
 	}
 
+	TagetRotator = UKismetMathLibrary::FindLookAtRotation(HandLocation, TargetEnd);
+
+
+
 	FColor LineColor = Hit.bBlockingHit ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), CameraLocation, End, LineColor, 1.0f);
+	DrawDebugLine(GetWorld(), CameraLocation, TargetEnd, LineColor, 1.0f);
 
 
 
@@ -209,6 +191,6 @@ void ASCharacter::Ultimate()
 
 
 
-	GetWorld()->SpawnActor<AActor>(UltimateClass, SpawnTm, SpawnParams);
+	GetWorld()->SpawnActor<AActor>(SpawnProjectileClass, SpawnTm, SpawnParams);
 }
 

@@ -1,0 +1,7 @@
+
+-블랙홀 발사체 이슈 
+
+
+Radial force 작동이 안되는데 원인파악불가
+
+force sterngth 의 값이 충분히 커야한다!
