@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class USInteractionComponent;
+class USAttributeComponent;
 
 UCLASS()
 class ACTIONROUGELIKE_API ASCharacter : public ACharacter
@@ -43,6 +44,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent* interactionComp;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Component")
+	USAttributeComponent* AttributeComp;
 	
 	
 

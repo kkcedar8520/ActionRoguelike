@@ -9,6 +9,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "CollisionDebugDrawingPublic.h"
 #include "DrawDebugHelpers.h"
+#include "SAttributeComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -25,6 +26,8 @@ ASCharacter::ASCharacter()
 	CameraComp->SetupAttachment(SpringArmComp);
 
 	interactionComp=CreateDefaultSubobject<USInteractionComponent>("interaction");
+
+	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("Attribute");
 
 	GetCharacterMovement()->bOrientRotationToMovement=true;
 
